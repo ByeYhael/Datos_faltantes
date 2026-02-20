@@ -1,0 +1,150 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{titling}
+\usepackage{float}
+
+\title{
+	\textbf{Análisis de Datos Faltantes, Atípicos y Cardinalidad en Conjuntos de Datos} \\ 
+	\vspace{0.3cm}
+	\large \textbf{Análisis de la Encuesta Nacional sobre la Dinámica de las Relaciones en los Hogares (ENDIREH) 2021}
+}
+\author{
+	Yhael Salvador Pérez Balderas \\ 
+	\small Universidad Autónoma de Querétaro \\ 
+	\small Aprendizaje Automático
+}
+\date{Febrero 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+
+El análisis de datos constituye una fase fundamental en cualquier proyecto de inteligencia artificial y aprendizaje automático. La calidad de los datos utilizados determina en gran medida el rendimiento y la validez de los modelos construidos. En este contexto, tres aspectos críticos requieren atención especial: los datos faltantes, los datos atípicos y la cardinalidad de las variables. Los datos faltantes representan una problemática frecuente en conjuntos de datos reales, surgen por diversas razones como errores de medición, fallas en sistemas de recolección o la negativa de participantes a proporcionar información. Los datos atípicos o outliers pueden distorsionar significativamente los resultados del análisis estadístico y afectar negativamente el entrenamiento de modelos predictivos. Por su parte, la cardinalidad alta en variables categóricas puede generar problemas de sobreajuste y aumentar la complejidad computacional. El presente informe tiene como objetivo aplicar técnicas de detección y tratamiento de datos faltantes, identificar valores atípicos mediante métodos estadísticos y analizar la cardinalidad de las variables en el conjunto de datos de la ENDIREH 2021, siguiendo los procedimientos descritos en las fuentes bibliográficas consultadas.
+
+\section{Marco Teórico}
+
+Los datos faltantes se definen como la ausencia de valores en ciertas observaciones dentro de un conjunto de datos. Según la literatura especializada, existen tres categorías principales de datos faltantes. La primera categoría es MCAR (Missing Completely At Random), donde los datos faltantes se distribuyen de manera completamente aleatoria y no existe relación con los valores de otras variables ni con los valores faltantes mismos. La segunda categoría es MAR (Missing At Random), en la cual la ausencia de datos depende de otras variables observadas en el conjunto de datos. La tercera categoría es MNAR (Missing Not At Random), donde los datos faltantes dependen del valor faltante mismo, lo cual representa el caso más problemático para el análisis.
+
+Los datos atípicos o outliers son valores que se desvían significativamente del patrón general de los datos. Estos valores pueden originarse por errores de medición, entrada de datos incorrecta o fenómenos genuinos pero raros. Los métodos de detección incluyen el método del rango intercuartil (IQR), que considera como atípicos aquellos valores que se encuentran por debajo de Q1 - 1.5*IQR o por encima de Q3 + 1.5*IQR. Otro método común es el Z-Score, que identifica como atípicos aquellos valores con un puntaje Z mayor a 3 o menor a -3, indicando que el valor se encuentra a más de tres desviaciones estándar de la media.
+
+La cardinalidad se refiere al número de valores únicos que puede tomar una variable. Una cardinalidad alta indica que una variable categórica tiene muchos valores únicos, mientras que una cardinalidad baja indica pocos valores únicos. La cardinalidad elevada puede generar problemas en la construcción de modelos, especialmente cuando se utilizan técnicas de one-hot encoding, ya que esto incrementa dramáticamente la dimensionalidad del conjunto de datos.
+
+\section{Materiales y Métodos}
+
+Para el desarrollo de este análisis se utilizó el lenguaje de programación Python con las librerías pandas para la manipulación de datos y numpy para los cálculos numéricos. Los datos analizados corresponden a la Encuesta Nacional sobre la Dinámica de las Relaciones en los Hogares (ENDIREH) 2021, específicamente el archivo TSDem.csv.
+
+El archivo TSDem (Características Sociodemográficas) contiene las características sociodemográficas, económicas y culturales de cada una de las personas residentes de la vivienda. Este archivo es fundamental para el análisis de la dinámica familiar y la situación de violencia contra las mujeres en México, ya que proporciona información sobre la estructura de los hogares y las características de sus integrantes.
+
+Las técnicas aplicadas incluyeron el análisis de valores nulos mediante la función isnull().sum() de pandas, que permite identificar la cantidad de datos faltantes por cada columna del conjunto de datos. Para la detección de datos atípicos se utilizó el método del rango intercuartil (IQR), calculando los percentiles 25 y 75 para cada variable numérica. El análisis de cardinalidad se llevó a cabo mediante la función nunique(), que devuelve el número de valores únicos en cada columna.
+
+La metodología seguida fue la siguiente: primero se cargó el conjunto de datos con codificación latin-1; posteriormente se identificaron los datos faltantes y su porcentaje por variable; a continuación se aplicó el método IQR para detectar outliers; finalmente se analizó la cardinalidad de todas las variables.
+
+\subsection{Tipos de Datos Faltantes}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Resultados1.png}
+\caption{Clasificación de datos faltantes: MCAR, MAR y MNAR}
+\label{fig:tipos_faltantes}
+\end{figure}
+
+\subsection{Consecuencias de los Datos Faltantes}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Resultados2.png}
+\caption{Impacto de los datos faltantes en el análisis}
+\label{fig:consecuencias_faltantes}
+\end{figure}
+
+\subsection{Concepto de Cardinalidad}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{Resultados3.png}
+\caption{Concepto y técnicas de cardinalidad}
+\label{fig:cardinalidad}
+\end{figure}
+
+\section{Resultados y Discusión}
+
+El análisis del conjunto de datos TSDem de la ENDIREH 2021 reveló un total de 432,746 registros con 37 variables. El análisis cuantitativo de datos faltantes identificó 15 variables con valores nulos, representando un total de 2,587,886 valores faltantes en todo el conjunto de datos. Las variables con mayor porcentaje de datos faltantes fueron P2\_12 con 93.63\%, REN\_MUJ\_EL con 74.55\% y REN\_INF\_AD con 71.66\%. Estas tres variables presentan un patrón que podría corresponder a datos MNAR, dado que su ausencia está relacionada con la naturaleza de las preguntas sobre violencia.
+
+La identificación del tipo de datos faltantes requiere un análisis más profundo. Las variables con porcentaje menor al 5\% como NIV, GRA, P2\_9, P2\_10 y P2\_11 (todas con 3.85\%) podrían clasificarse como MCAR o MAR, mientras que las variables con porcentajes superiores al 50\% presentan un comportamiento más complejo. En el caso de datos MCAR, la imputación por media o moda resulta apropiada; para datos MAR, técnicas más sofisticadas como la imputación múltiple pueden ser necesarias; mientras que los datos MNAR requieren un tratamiento especial.
+
+La detección de datos atípicos mediante el método IQR permitió identificar outliers en 16 de las 32 variables numéricas analizadas. La variable FAC\_MUJ presentó el mayor número de outliers con 88,463 casos (20.44\% del total), seguida por NIV con 67,956 casos (15.70\%) y CVE\_MUN con 42,142 casos (9.74\%). Es importante saber porque existen estos valores atípicos?
+
+El análisis de cardinalidad evidenció que 10 variables presentan una cardinalidad alta (más de 50 valores únicos), mientras que 12 variables tienen cardinalidad baja (5 o menos valores únicos). Las variables con mayor cardinalidad son ID\_PER con 432,746 valores únicos (identificador único por registro), ID\_VIV con 122,646 valores y UPM con 17,763 valores. Las variables con cardinalidad muy baja como NOMBRE (1 valor), COD\_M15 (1 valor) y CODIGO (2 valores) podrían ser candidatas para eliminación si no aportan información para el modelo.
+
+\subsection{Resumen Estadístico de Variables Numéricas}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+Variable & Count & Mean & Std & Min & 25\% & 50\% & Max \\
+\hline
+ID\_VIV & 432746 & 1671565.17 & 919294.62 & 100003 & - & - & - \\
+UPM & 432746 & 1671565.17 & 919294.62 & 1000003 & - & - & - \\
+VIV\_SEL & 432746 & 6.89 & 5.69 & 1 & 3 & 5 & 24 \\
+CVE\_ENT & 432746 & 16.53 & 9.17 & 1 & 9 & 16 & 32 \\
+CVE\_MUN & 432746 & 39.02 & 62.01 & 1 & 7 & 19 & 570 \\
+HOGAR & 432746 & 1.03 & 0.21 & 1 & 1 & 1 & 6 \\
+N\_REN & 432746 & 2.77 & 1.79 & 1 & 1 & 2 & 24 \\
+PAREN & 432746 & 2.63 & 1.72 & 1 & 1 & 3 & 11 \\
+SEXO & 432746 & 1.51 & 0.50 & 1 & 1 & 2 & 2 \\
+EDAD & 432746 & 32.98 & 21.42 & 0 & 15 & 30 & 99 \\
+P2\_5 & 432746 & 54.32 & 46.90 & 1 & 2 & 96 & 98 \\
+P2\_6 & 432746 & 65.87 & 44.44 & 1 & 1 & 96 & 98 \\
+NIV & 416098 & 3.86 & 2.95 & 0 & 2 & 3 & 11 \\
+GRA & 416098 & 3.12 & 1.62 & 0 & 2 & 3 & 9 \\
+P2\_8 & 157268 & 1.30 & 0.50 & 1 & 1 & 1 & 9 \\
+P2\_9 & 416098 & 1.71 & 0.45 & 1 & 1 & 2 & 2 \\
+P2\_10 & 416098 & 2.53 & 1.14 & 1 & 1 & 3 & 8 \\
+P2\_11 & 416098 & 1.93 & 0.25 & 1 & 2 & 2 & 2 \\
+P2\_12 & 27584 & 1.08 & 0.26 & 1 & 1 & 1 & 2 \\
+P2\_13 & 351278 & 1.46 & 0.50 & 1 & 1 & 1 & 2 \\
+P2\_14 & 161601 & 8.95 & 2.25 & 1 & 8 & 10 & 99 \\
+P2\_15 & 201808 & 2.17 & 1.50 & 1 & 1 & 1 & 6 \\
+P2\_16 & 351278 & 4.35 & 1.86 & 1 & 3 & 5 & 6 \\
+COD\_M15 & 169612 & 1.00 & 0.00 & 1 & 1 & 1 & 1 \\
+CODIGO & 169612 & 0.65 & 0.48 & 0 & 0 & 1 & 1 \\
+REN\_MUJ\_EL & 110127 & 2.08 & 1.05 & 1 & 1 & 2 & 18 \\
+REN\_INF\_AD & 122646 & 1.74 & 0.95 & 1 & 1 & 2 & 19 \\
+FAC\_VIV & 432746 & 295.70 & 252.31 & 12 & 132 & 226 & 2826 \\
+FAC\_MUJ & 432746 & 116.75 & 326.98 & 0 & 0 & 58 & 8836 \\
+ESTRATO & 432746 & 2.14 & 0.82 & 1 & 2 & 2 & 4 \\
+EST\_DIS & 432746 & 298.81 & 176.60 & 1 & 154 & 300 & 617 \\
+UPM\_DIS & 432746 & 9276.42 & 5065.16 & 1 & 4953 & 9192 & 17795 \\
+\hline
+\end{tabular}
+\caption{Resumen estadístico de variables numéricas del conjunto de datos ENDIREH 2021}
+\label{tab:resumen_estadistico}
+\end{table}
+
+\section{Conclusión}
+
+El análisis de datos faltantes, atípicos y la evaluación de la cardinalidad resultan fundamentales para garantizar la calidad de los datos antes de aplicar técnicas de aprendizaje automático, ya que estos factores pueden introducir sesgos que comprometen la precisión y confiabilidad de los modelos. Evaluar adecuadamente las variables permite seleccionar métodos de imputación apropiados, evitando distorsiones en los resultados finales. Para ello, es necesario conocer características generales del conjunto de datos, como el número de atributos, sus desviaciones estándar y distribuciones, lo cual facilita la toma de decisiones informadas durante el proceso de limpieza y preparación de los datos.
+
+\section{Bibliografía}
+
+Aceves Fernández, M. A. (2024). \textit{De 0 a 100 en Inteligencia Artificial}. 
+
+Aceves Fernández, M. A. (2026). Presentación 1: Datos Faltantes. Material de clase de Aprendizaje Automático, Universidad Autónoma de Querétaro.
+
+Aceves Fernández, M. A. (2026). Presentación 2: Datos Atípicos. Material de clase de Aprendizaje Automático, Universidad Autónoma de Querétaro.
+
+Aceves Fernández, M. A. (2026). Presentación 3: Cardinalidad. Material de clase de Aprendizaje Automático, Universidad Autónoma de Querétaro.
+
+Géron, A. (2019). \textit{Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow} (2nd ed.). O'Reilly Media.
+
+Instituto Nacional de Estadística y Geografía (INEGI). (2021). Encuesta Nacional sobre la Dinámica de las Relaciones en los Hogares (ENDIREH) 2021. https://www.inegi.org.mx/programas/endireh/2021/
+
+\end{document}

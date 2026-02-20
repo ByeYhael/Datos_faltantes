@@ -1,0 +1,3 @@
+https://www.inegi.org.mx/programas/endireh/2021/#microdatos
+
+La base de datos que se usa es TSDem.csv
