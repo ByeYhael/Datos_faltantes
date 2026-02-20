@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.11.1)  20 FEB 2026 04:18
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.11.1)  20 FEB 2026 04:41
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -290,39 +290,46 @@ File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 
 {C:/Users/yhael/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
 
+LaTeX Warning: Citation `aceves2024' on page 2 undefined on input line 53.
+
+
+
 [2]
-<Resultados1.png, id=12, 426.84468pt x 668.4975pt>
+<Resultados1.png, id=17, 426.84468pt x 668.4975pt>
 File: Resultados1.png Graphic file (type png)
 <use Resultados1.png>
-Package pdftex.def Info: Resultados1.png  used on input line 53.
+Package pdftex.def Info: Resultados1.png  used on input line 69.
 (pdftex.def)             Requested size: 276.00105pt x 432.28433pt.
-<Resultados2.png, id=14, 357.58594pt x 612.03656pt>
+
+
+[3]
+<Resultados2.png, id=22, 357.58594pt x 612.03656pt>
 File: Resultados2.png Graphic file (type png)
 <use Resultados2.png>
-Package pdftex.def Info: Resultados2.png  used on input line 62.
+Package pdftex.def Info: Resultados2.png  used on input line 78.
 (pdftex.def)             Requested size: 276.00105pt x 472.41829pt.
 
 
-[3 <./Resultados1.png>]
-<Resultados3.png, id=19, 1216.545pt x 389.20406pt>
+[4 <./Resultados1.png>]
+<Resultados3.png, id=27, 1216.545pt x 389.20406pt>
 File: Resultados3.png Graphic file (type png)
 <use Resultados3.png>
-Package pdftex.def Info: Resultados3.png  used on input line 71.
+Package pdftex.def Info: Resultados3.png  used on input line 87.
 (pdftex.def)             Requested size: 276.00105pt x 88.29759pt.
 
 
-[4 <./Resultados2.png>]
-Overfull \hbox (35.28426pt too wide) in paragraph at lines 90--128
+[5 <./Resultados2.png>]
+Overfull \hbox (35.28426pt too wide) in paragraph at lines 106--144
  [][] 
  []
 
 
 
-[5 <./Resultados3.png>]
+[6 <./Resultados3.png>]
 
-[6]
+[7]
 
-[7] (Informe_Analisis_Datos.aux
+[8] (Informe_Analisis_Datos.aux
 LaTeX Info: Redefining \. on input line 8.
 LaTeX Info: Redefining \% on input line 8.
 )
@@ -330,24 +337,33 @@ LaTeX Info: Redefining \% on input line 8.
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-10-09>
  ***********
+
+
+LaTeX Warning: There were undefined references.
+
  ) 
 Here is how much of TeX's memory you used:
- 3864 strings out of 468080
- 63109 string characters out of 5425772
- 512036 words of memory out of 5000000
- 32514 multiletter control sequences out of 15000+600000
- 633748 words of font info for 61 fonts, out of 8000000 for 9000
+ 3887 strings out of 468080
+ 63418 string characters out of 5425772
+ 513036 words of memory out of 5000000
+ 32535 multiletter control sequences out of 15000+600000
+ 634224 words of font info for 63 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,9n,65p,1341b,365s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,9n,65p,763b,365s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/yhael/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
-cmbx12.pfb><C:/Users/yhael/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cm/cmr10.pfb><C:/Users/yhael/AppData/Local/Programs/MiKTeX/fonts/type1/pu
-blic/amsfonts/cm/cmr12.pfb><C:/Users/yhael/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/amsfonts/cm/cmr9.pfb><C:/Users/yhael/AppData/Local/Programs/MiKTeX
-/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on Informe_Analisis_Datos.pdf (7 pages, 247905 bytes).
+cmbx10.pfb><C:/Users/yhael/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmbx12.pfb><C:/Users/yhael/AppData/Local/Programs/MiKTeX/fonts/type1/p
+ublic/amsfonts/cm/cmmi10.pfb><C:/Users/yhael/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/yhael/AppData/Local/Programs/MiK
+TeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/yhael/AppData/Local/Prog
+rams/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/yhael/AppData/Loc
+al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/yhael/Ap
+pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users
+/yhael/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+
+Output written on Informe_Analisis_Datos.pdf (8 pages, 293298 bytes).
 PDF statistics:
- 58 PDF objects out of 1000 (max. 8388607)
+ 81 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

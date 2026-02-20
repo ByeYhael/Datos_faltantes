@@ -26,15 +26,31 @@
 
 \section{Introducción}
 
-El análisis de datos constituye una fase fundamental en cualquier proyecto de inteligencia artificial y aprendizaje automático. La calidad de los datos utilizados determina en gran medida el rendimiento y la validez de los modelos construidos. En este contexto, tres aspectos críticos requieren atención especial: los datos faltantes, los datos atípicos y la cardinalidad de las variables. Los datos faltantes representan una problemática frecuente en conjuntos de datos reales, surgen por diversas razones como errores de medición, fallas en sistemas de recolección o la negativa de participantes a proporcionar información. Los datos atípicos o outliers pueden distorsionar significativamente los resultados del análisis estadístico y afectar negativamente el entrenamiento de modelos predictivos. Por su parte, la cardinalidad alta en variables categóricas puede generar problemas de sobreajuste y aumentar la complejidad computacional. El presente informe tiene como objetivo aplicar técnicas de detección y tratamiento de datos faltantes, identificar valores atípicos mediante métodos estadísticos y analizar la cardinalidad de las variables en el conjunto de datos de la ENDIREH 2021, siguiendo los procedimientos descritos en las fuentes bibliográficas consultadas.
-
+El análisis de datos es una etapa crítica en el desarrollo de modelos de aprendizaje automático, ya que la calidad de los datos determina directamente el rendimiento de los algoritmos. En este trabajo se aborda el conjunto de datos ENDIREH 2021 para identificar y tratar tres problemas comunes en bases de datos reales: datos faltantes, valores atípicos y alta cardinalidad en variables categóricas. Estos aspectos, si no se manejan adecuadamente, pueden introducir sesgos y comprometer la validez de los resultados. El análisis sigue los procedimientos establecidos en el material de clase del Dr. Marco Antonio Aceves Fernández y la referencia "De 0 a 100 en Inteligencia Artificial"
 \section{Marco Teórico}
 
-Los datos faltantes se definen como la ausencia de valores en ciertas observaciones dentro de un conjunto de datos. Según la literatura especializada, existen tres categorías principales de datos faltantes. La primera categoría es MCAR (Missing Completely At Random), donde los datos faltantes se distribuyen de manera completamente aleatoria y no existe relación con los valores de otras variables ni con los valores faltantes mismos. La segunda categoría es MAR (Missing At Random), en la cual la ausencia de datos depende de otras variables observadas en el conjunto de datos. La tercera categoría es MNAR (Missing Not At Random), donde los datos faltantes dependen del valor faltante mismo, lo cual representa el caso más problemático para el análisis.
+\subsection{Datos faltantes}
+Los datos faltantes son valores ausentes en observaciones específicas. En la ENDIREH 2021 aparecen como no respuestas en preguntas sensibles sobre violencia. Se clasifican en:
 
-Los datos atípicos o outliers son valores que se desvían significativamente del patrón general de los datos. Estos valores pueden originarse por errores de medición, entrada de datos incorrecta o fenómenos genuinos pero raros. Los métodos de detección incluyen el método del rango intercuartil (IQR), que considera como atípicos aquellos valores que se encuentran por debajo de Q1 - 1.5*IQR o por encima de Q3 + 1.5*IQR. Otro método común es el Z-Score, que identifica como atípicos aquellos valores con un puntaje Z mayor a 3 o menor a -3, indicando que el valor se encuentra a más de tres desviaciones estándar de la media.
+\begin{itemize}
+	\item \textbf{MCAR} (Missing Completely at Random): Valores faltantes por azar, sin relación con otras variables. Ejemplo: omisión por distracción.
+	\item \textbf{MAR} (Missing at Random): Ausencia dependiente de otras variables observadas. Ejemplo: mujeres jóvenes omiten más preguntas sobre violencia sexual.
+	\item \textbf{MNAR} (Missing Not at Random): Datos faltantes relacionados con el valor mismo. Ejemplo: víctimas de violencia extrema no responden por temor.
+\end{itemize}
 
-La cardinalidad se refiere al número de valores únicos que puede tomar una variable. Una cardinalidad alta indica que una variable categórica tiene muchos valores únicos, mientras que una cardinalidad baja indica pocos valores únicos. La cardinalidad elevada puede generar problemas en la construcción de modelos, especialmente cuando se utilizan técnicas de one-hot encoding, ya que esto incrementa dramáticamente la dimensionalidad del conjunto de datos.
+\subsection{Datos atípicos}
+Los datos atípicos son valores que se desvían del patrón general. En la ENDIREH suelen originarse por errores de captura (ej. edad = 150 años) o valores extremos reales. Métodos de detección:
+
+\begin{itemize}
+	\item \textbf{Rango intercuartil (IQR)}: Valores fuera de $[Q1 - 1.5 \times IQR,\ Q3 + 1.5 \times IQR]$
+	\item \textbf{Z-Score}: Valores con $|Z| > 3$ (más de tres desviaciones estándar de la media)
+\end{itemize}
+
+\subsection{Cardinalidad}
+La cardinalidad es el número de valores únicos en una variable. Variables como \texttt{estado\_civil} tienen baja cardinalidad, mientras que identificadores personales presentan alta cardinalidad. Una cardinalidad excesiva complica el modelado al aplicar \textit{one-hot encoding}, incrementando la dimensionalidad y causando sobreajuste.
+
+\vspace{0.5cm}
+\noindent Este análisis sigue los criterios del Dr. Marco Antonio Aceves Fernández y la referencia ``De 0 a 100 en Inteligencia Artificial'' \cite{aceves2024}.
 
 \section{Materiales y Métodos}
 
