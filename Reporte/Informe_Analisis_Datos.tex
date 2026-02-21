@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
+\usepackage[margin=1in]{geometry}
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -26,141 +27,230 @@
 
 \section{Introducción}
 
-El análisis de datos es una etapa crítica en el desarrollo de modelos de aprendizaje automático, ya que la calidad de los datos determina directamente el rendimiento de los algoritmos. En este trabajo se aborda el conjunto de datos ENDIREH 2021 para identificar y tratar tres problemas comunes en bases de datos reales: datos faltantes, valores atípicos y alta cardinalidad en variables categóricas. Estos aspectos, si no se manejan adecuadamente, pueden introducir sesgos y comprometer la validez de los resultados. El análisis sigue los procedimientos establecidos en el material de clase del Dr. Marco Antonio Aceves Fernández y la referencia "De 0 a 100 en Inteligencia Artificial"
+El análisis de datos es una etapa crítica en el desarrollo de modelos de aprendizaje automático, ya que la calidad de los datos determina directamente el rendimiento de los algoritmos. En este trabajo se aborda el conjunto de datos ENDIREH 2021 para identificar y tratar tres problemas comunes en bases de datos reales: datos faltantes, valores atípicos y alta cardinalidad en variables categóricas.
+
 \section{Marco Teórico}
 
 \subsection{Datos faltantes}
-Los datos faltantes son valores ausentes en observaciones específicas. En la ENDIREH 2021 aparecen como no respuestas en preguntas sensibles sobre violencia. Se clasifican en:
+Los datos faltantes son valores ausentes en observaciones específicas. Se clasifican en:
 
 \begin{itemize}
-	\item \textbf{MCAR} (Missing Completely at Random): Valores faltantes por azar, sin relación con otras variables. Ejemplo: omisión por distracción.
-	\item \textbf{MAR} (Missing at Random): Ausencia dependiente de otras variables observadas. Ejemplo: mujeres jóvenes omiten más preguntas sobre violencia sexual.
-	\item \textbf{MNAR} (Missing Not at Random): Datos faltantes relacionados con el valor mismo. Ejemplo: víctimas de violencia extrema no responden por temor.
+	\item \textbf{MCAR} (Missing Completely at Random): Valores faltantes por azar, sin relación con otras variables.
+	\item \textbf{MAR} (Missing at Random): Ausencia dependiente de otras variables observadas.
+	\item \textbf{MNAR} (Missing Not at Random): Datos faltantes relacionados con el valor mismo.
+\end{itemize}
+
+\subsection{Métodos de imputación}
+La imputación es el proceso de reemplazar valores faltantes con estimaciones:
+
+\begin{itemize}
+	\item \textbf{Imputación por media}: Promedio de la variable. Para distribuciones simétricas.
+	\item \textbf{Imputación por mediana}: Para distribuciones sesgadas o con outliers.
+	\item \textbf{Imputación por moda}: Para variables categóricas.
+	\item \textbf{Imputación por regresión}: Usa modelo de regresión lineal basado en variables correlacionadas.
+	\item \textbf{Imputación KNN}: Promedio de los k-vecinos más cercanos.
 \end{itemize}
 
 \subsection{Datos atípicos}
-Los datos atípicos son valores que se desvían del patrón general. En la ENDIREH suelen originarse por errores de captura (ej. edad = 150 años) o valores extremos reales. Métodos de detección:
+Los datos atípicos se detectan con el Rango Intercuartil (IQR): valores fuera de $[Q1 - 1.5 \times IQR,\ Q3 + 1.5 \times IQR]$.
 
-\begin{itemize}
-	\item \textbf{Rango intercuartil (IQR)}: Valores fuera de $[Q1 - 1.5 \times IQR,\ Q3 + 1.5 \times IQR]$
-	\item \textbf{Z-Score}: Valores con $|Z| > 3$ (más de tres desviaciones estándar de la media)
-\end{itemize}
+\subsection{Riesgos del ruido en los datos}
+El ruido puede causar: distorsión de patrones, aumento de varianza, y reducción de precisión.
 
 \subsection{Cardinalidad}
-La cardinalidad es el número de valores únicos en una variable. Variables como \texttt{estado\_civil} tienen baja cardinalidad, mientras que identificadores personales presentan alta cardinalidad. Una cardinalidad excesiva complica el modelado al aplicar \textit{one-hot encoding}, incrementando la dimensionalidad y causando sobreajuste.
+Número de valores únicos en una variable. Alta cardinalidad complica el modelado.
 
-\vspace{0.5cm}
-\noindent Este análisis sigue los criterios del Dr. Marco Antonio Aceves Fernández y la referencia ``De 0 a 100 en Inteligencia Artificial'' \cite{aceves2024}.
+\subsection{Distancias}
+\begin{itemize}
+	\item \textbf{Euclidiana}: $d(x,y) = \sqrt{\sum (x_i - y_i)^2}$
+	\item \textbf{Manhattan}: $d(x,y) = \sum |x_i - y_i|$
+	\item \textbf{Chebyshev}: $d(x,y) = \max |x_i - y_i|$
+\end{itemize}
 
 \section{Materiales y Métodos}
 
-Para el desarrollo de este análisis se utilizó el lenguaje de programación Python con las librerías pandas para la manipulación de datos y numpy para los cálculos numéricos. Los datos analizados corresponden a la Encuesta Nacional sobre la Dinámica de las Relaciones en los Hogares (ENDIREH) 2021, específicamente el archivo TSDem.csv.
+\subsection{Base de datos ENDIREH 2021}
+La Encuesta Nacional sobre la Dinámica de las Relaciones en los Hogares (ENDIREH) 2021 es un programa estadístico del INEGI que genera información sobre la organización de los hogares mexicanos, las relaciones de poder al interior de la familia y la prevalencia de violencia contra las mujeres. El archivo \texttt{TSDem.csv} corresponde al módulo de Características Sociodemográficas, el cual registra información sobre edad, género, nivel educativo, parentesco y actividad económica de los residentes de la vivienda. El conjunto analizado contiene \textbf{432,746 registros} y \textbf{37 variables} originales.
 
-El archivo TSDem (Características Sociodemográficas) contiene las características sociodemográficas, económicas y culturales de cada una de las personas residentes de la vivienda. Este archivo es fundamental para el análisis de la dinámica familiar y la situación de violencia contra las mujeres en México, ya que proporciona información sobre la estructura de los hogares y las características de sus integrantes.
+\subsection{Selección de variables y eliminación de ruido}
+Para garantizar la validez del análisis, se excluyeron dos tipos de variables:
 
-Las técnicas aplicadas incluyeron el análisis de valores nulos mediante la función isnull().sum() de pandas, que permite identificar la cantidad de datos faltantes por cada columna del conjunto de datos. Para la detección de datos atípicos se utilizó el método del rango intercuartil (IQR), calculando los percentiles 25 y 75 para cada variable numérica. El análisis de cardinalidad se llevó a cabo mediante la función nunique(), que devuelve el número de valores únicos en cada columna.
+\begin{enumerate}
+	\item \textbf{Ruido estructural}: variables técnicas que no representan características humanas:
+	\begin{itemize}
+		\item \texttt{N\_REN}: Número de renglón (01--30). Identificador secuencial del cuestionario, no una variable sustantiva.
+	\end{itemize}
+	
+	\item \textbf{Variables con $>50\%$ de valores nulos}: descartadas por no aportar información estadísticamente significativa (Tabla~\ref{tab:variables-descartadas}).
+\end{enumerate}
 
-La metodología seguida fue la siguiente: primero se cargó el conjunto de datos con codificación latin-1; posteriormente se identificaron los datos faltantes y su porcentaje por variable; a continuación se aplicó el método IQR para detectar outliers; finalmente se analizó la cardinalidad de todas las variables.
+Esta depuración evita la introducción de ruido que distorsionaría la identificación de patrones reales de datos faltantes (MCAR, MAR, MNAR).
 
-\subsection{Tipos de Datos Faltantes}
+\subsection{Variables analizadas}
+Las 14 variables seleccionadas para el análisis (con $<50\%$ de valores nulos y relevancia sustantiva) se presentan en la Tabla~\ref{tab:variables-analizadas}:
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{Resultados1.png}
-\caption{Clasificación de datos faltantes: MCAR, MAR y MNAR}
-\label{fig:tipos_faltantes}
-\end{figure}
+\begin{table}[h]
+	\centering
+	\caption{Variables analizadas del archivo TSDem}
+	\label{tab:variables-analizadas}
+	\small
+	\begin{tabular}{llp{7cm}}
+		\hline
+		\textbf{Variable} & \textbf{Tipo} & \textbf{Descripción} \\
+		\hline
+		\texttt{EDAD} & Numérico & Edad en años cumplidos (00--96, 97=97+ años) \\
+		\texttt{SEXO} & Numérico & Género (1=Hombre, 2=Mujer) \\
+		\texttt{NIV} & Numérico & Nivel educativo (00=Ninguno, 01=Preescolar, ..., 11=Posgrado) \\
+		\texttt{GRA} & Numérico & Grado escolar aprobado (0--8) \\
+		\texttt{PAREN} & Numérico & Parentesco con jefe/a del hogar (01=Jefa/Jefe, ..., 11=Empleada(o) doméstica(o)) \\
+		\texttt{CVE\_ENT} & Numérico & Clave de entidad federativa (01--32) \\
+		\texttt{CVE\_MUN} & Numérico & Clave de municipio (001--999) \\
+		\texttt{P2\_9} & Numérico & Asiste actualmente a la escuela (1=Sí, 2=No) \\
+		\texttt{P2\_10} & Numérico & Autoidentificación indígena (1=Sí, 2=Sí en parte, 3=No) \\
+		\texttt{P2\_11} & Numérico & Habla dialecto/lengua indígena (1=Sí, 2=No) \\
+		\texttt{P2\_13} & Numérico & Trabajó la semana pasada (1=Sí, 2=No) \\
+		\texttt{P2\_16} & Numérico & Estado civil (01=Unión libre, ..., 06=Soltera(o)) \\
+		\hline
+	\end{tabular}
+\end{table}
 
-\subsection{Consecuencias de los Datos Faltantes}
+\subsection{Variables descartadas}
+Se descartaron \textbf{8 variables} con más del 50\% de valores nulos (Tabla~\ref{tab:variables-descartadas}). Los porcentajes exactos se calcularon mediante \texttt{df.isnull().mean() * 100}:
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{Resultados2.png}
-\caption{Impacto de los datos faltantes en el análisis}
-\label{fig:consecuencias_faltantes}
-\end{figure}
+\begin{table}[h]
+	\centering
+	\caption{Variables descartadas por exceso de valores faltantes ($>50\%$)}
+	\label{tab:variables-descartadas}
+	\small
+	\begin{tabular}{llp{5cm}}
+		\hline
+		\textbf{Variable} & \textbf{\% Nulos} & \textbf{Motivo de descarte} \\
+		\hline
+		\texttt{P2\_12} & 93.63\% & Habla español (no aplicable en contextos donde es lengua dominante) \\
+		\texttt{REN\_MUJ\_EL} & 74.55\% & Renglón de mujer elegida (solo aplica a submuestra de 15+ años) \\
+		\texttt{REN\_INF\_AD} & 71.66\% & Renglón de informante adecuado (solo aplica a submuestra específica) \\
+		\texttt{P2\_8} & 63.66\% & Sabe leer/escribir (no aplicable a menores de edad) \\
+		\texttt{P2\_14} & 62.66\% & Tipo de trabajo (no aplicable a población económicamente inactiva) \\
+		\texttt{CODIGO} & 60.81\% & Código de mujer seleccionada (solo aplica a submuestra) \\
+		\texttt{COD\_M15} & 60.81\% & Código para mujeres de 15+ años (solo aplica a submuestra) \\
+		\texttt{P2\_15} & 53.37\% & Relación laboral (no aplicable a población sin actividad económica) \\
+		\hline
+	\end{tabular}
+\end{table}
 
-\subsection{Concepto de Cardinalidad}
+\subsection{Metodología aplicada}
+El análisis siguió el siguiente flujo:
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{Resultados3.png}
-\caption{Concepto y técnicas de cardinalidad}
-\label{fig:cardinalidad}
-\end{figure}
+\begin{enumerate}
+	\item Carga del conjunto de datos con codificación \texttt{latin-1}.
+	\item Cálculo del porcentaje de valores nulos por variable mediante \texttt{df.isnull().mean() * 100}.
+	\item Descarte de 8 variables con $>50\%$ nulos y eliminación de ruido estructural (\texttt{HOGAR}, \texttt{N\_REN}).
+	\item Generación de boxplots iniciales para visualizar distribución y detectar outliers (Figura~\ref{fig:boxplot_inicial}).
+	\item Selección específica de método de imputación por variable:
+	\begin{itemize}
+		\item \textbf{EDAD}: Imputación por \textit{media} (distribución simétrica, sesgo < 0.1).
+		\item \textbf{NIV}: Imputación por \textit{regresión} (R² = 0.0087, aprovechando correlación con \texttt{GRA}).
+		\item \textbf{Resto de variables} (\texttt{GRA}, \texttt{P2\_9}, \texttt{P2\_10}, \texttt{P2\_11}, \texttt{P2\_13}, \texttt{P2\_16}): Imputación por \textit{mediana} (distribuciones sesgadas o con outliers).
+	\end{itemize}
+	\item Aplicación de imputación mediante \texttt{SimpleImputer} (media/mediana) y regresión lineal para \texttt{NIV}.
+	\item Normalización con \texttt{MinMaxScaler} para escalar variables a $[0,1]$.
+	\item Generación de boxplots (Figura~\ref{fig:boxplot_inicial}) incluyendo comparación específica EDAD-NIV (Figura~\ref{fig:boxplot_edad_niv}).
+\end{enumerate}
+
+Todas las operaciones se realizaron en Python 3.13 usando las librerías \texttt{pandas}, \texttt{numpy}, \texttt{matplotlib}, \texttt{seaborn} y \texttt{scikit-learn}. El código completo se encuentra en \texttt{src/analisis.py}.
+
+
 
 \section{Resultados y Discusión}
 
-El análisis del conjunto de datos TSDem de la ENDIREH 2021 reveló un total de 432,746 registros con 37 variables. El análisis cuantitativo de datos faltantes identificó 15 variables con valores nulos, representando un total de 2,587,886 valores faltantes en todo el conjunto de datos. Las variables con mayor porcentaje de datos faltantes fueron P2\_12 con 93.63\%, REN\_MUJ\_EL con 74.55\% y REN\_INF\_AD con 71.66\%. Estas tres variables presentan un patrón que podría corresponder a datos MNAR, dado que su ausencia está relacionada con la naturaleza de las preguntas sobre violencia.
+\subsection{Resultados de imputación}
+La Figura~\ref{fig:boxplot_inicial} muestra la distribución inicial de las variables antes de la imputación, revelando una alta concentración de valores faltantes en variables como \texttt{P2\_12} (93.63\%). La imputación por media preservó la simetría de \texttt{EDAD} (media = 32.98, desviación estándar = 21.42), mientras que la regresión aplicada a \texttt{NIV} (R² = 0.0087) redujo ligeramente el sesgo entre media (3.86) y mediana (3), como se observa en la Figura~\ref{fig:boxplot_edad_niv}.
 
-La identificación del tipo de datos faltantes requiere un análisis más profundo. Las variables con porcentaje menor al 5\% como NIV, GRA, P2\_9, P2\_10 y P2\_11 (todas con 3.85\%) podrían clasificarse como MCAR o MAR, mientras que las variables con porcentajes superiores al 50\% presentan un comportamiento más complejo. En el caso de datos MCAR, la imputación por media o moda resulta apropiada; para datos MAR, técnicas más sofisticadas como la imputación múltiple pueden ser necesarias; mientras que los datos MNAR requieren un tratamiento especial.
+\subsection{Análisis de datos faltantes}
+El análisis identificó 8 variables con más del 50\% de valores nulos (Tabla~\ref{tab:variables-descartadas}), siendo \texttt{P2\_12} la más afectada (93.63\%). Estas variables corresponden principalmente a preguntas aplicables solo a submuestras específicas (ej: mujeres de 15+ años), lo que explica su alta tasa de no respuesta. La distribución inicial de las variables analizadas mostró sesgo positivo en \texttt{NIV} (nivel educativo) y simetría en \texttt{EDAD}.
 
-La detección de datos atípicos mediante el método IQR permitió identificar outliers en 16 de las 32 variables numéricas analizadas. La variable FAC\_MUJ presentó el mayor número de outliers con 88,463 casos (20.44\% del total), seguida por NIV con 67,956 casos (15.70\%) y CVE\_MUN con 42,142 casos (9.74\%). Es importante saber porque existen estos valores atípicos?
+\subsection{Efecto de la imputación}
+Se aplicaron métodos específicos según la naturaleza de cada variable:
+\begin{itemize}
+	\item \texttt{EDAD}: Imputación por media (distribución simétrica, sesgo < 0.1).
+	\item \texttt{NIV}: Imputación por regresión lineal (R² = 0.0087), aprovechando su correlación con \texttt{GRA}.
+	\item Resto de variables: Imputación por mediana (distribuciones sesgadas).
+\end{itemize}
 
-El análisis de cardinalidad evidenció que 10 variables presentan una cardinalidad alta (más de 50 valores únicos), mientras que 12 variables tienen cardinalidad baja (5 o menos valores únicos). Las variables con mayor cardinalidad son ID\_PER con 432,746 valores únicos (identificador único por registro), ID\_VIV con 122,646 valores y UPM con 17,763 valores. Las variables con cardinalidad muy baja como NOMBRE (1 valor), COD\_M15 (1 valor) y CODIGO (2 valores) podrían ser candidatas para eliminación si no aportan información para el modelo.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{../figures/boxplot_inicial.png}
+	\caption{Distribución antes de imputación}
+	\label{fig:boxplot_inicial}
+\end{figure}
 
-\subsection{Resumen Estadístico de Variables Numéricas}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{../figures/boxplot_edad_niv.png}
+	\caption{Comparación EDAD (media) y NIV (regresión)}
+	\label{fig:boxplot_edad_niv}
+\end{figure}
+
+
+\subsection{Resumen estadístico}
+La Tabla~\ref{tab:resumen} presenta el resumen estadistico post-imputacion.
 
 \begin{table}[H]
-\centering
-\begin{tabular}{|l|c|c|c|c|c|c|c|}
-\hline
-Variable & Count & Mean & Std & Min & 25\% & 50\% & Max \\
-\hline
-ID\_VIV & 432746 & 1671565.17 & 919294.62 & 100003 & - & - & - \\
-UPM & 432746 & 1671565.17 & 919294.62 & 1000003 & - & - & - \\
-VIV\_SEL & 432746 & 6.89 & 5.69 & 1 & 3 & 5 & 24 \\
-CVE\_ENT & 432746 & 16.53 & 9.17 & 1 & 9 & 16 & 32 \\
-CVE\_MUN & 432746 & 39.02 & 62.01 & 1 & 7 & 19 & 570 \\
-HOGAR & 432746 & 1.03 & 0.21 & 1 & 1 & 1 & 6 \\
-N\_REN & 432746 & 2.77 & 1.79 & 1 & 1 & 2 & 24 \\
-PAREN & 432746 & 2.63 & 1.72 & 1 & 1 & 3 & 11 \\
-SEXO & 432746 & 1.51 & 0.50 & 1 & 1 & 2 & 2 \\
-EDAD & 432746 & 32.98 & 21.42 & 0 & 15 & 30 & 99 \\
-P2\_5 & 432746 & 54.32 & 46.90 & 1 & 2 & 96 & 98 \\
-P2\_6 & 432746 & 65.87 & 44.44 & 1 & 1 & 96 & 98 \\
-NIV & 416098 & 3.86 & 2.95 & 0 & 2 & 3 & 11 \\
-GRA & 416098 & 3.12 & 1.62 & 0 & 2 & 3 & 9 \\
-P2\_8 & 157268 & 1.30 & 0.50 & 1 & 1 & 1 & 9 \\
-P2\_9 & 416098 & 1.71 & 0.45 & 1 & 1 & 2 & 2 \\
-P2\_10 & 416098 & 2.53 & 1.14 & 1 & 1 & 3 & 8 \\
-P2\_11 & 416098 & 1.93 & 0.25 & 1 & 2 & 2 & 2 \\
-P2\_12 & 27584 & 1.08 & 0.26 & 1 & 1 & 1 & 2 \\
-P2\_13 & 351278 & 1.46 & 0.50 & 1 & 1 & 1 & 2 \\
-P2\_14 & 161601 & 8.95 & 2.25 & 1 & 8 & 10 & 99 \\
-P2\_15 & 201808 & 2.17 & 1.50 & 1 & 1 & 1 & 6 \\
-P2\_16 & 351278 & 4.35 & 1.86 & 1 & 3 & 5 & 6 \\
-COD\_M15 & 169612 & 1.00 & 0.00 & 1 & 1 & 1 & 1 \\
-CODIGO & 169612 & 0.65 & 0.48 & 0 & 0 & 1 & 1 \\
-REN\_MUJ\_EL & 110127 & 2.08 & 1.05 & 1 & 1 & 2 & 18 \\
-REN\_INF\_AD & 122646 & 1.74 & 0.95 & 1 & 1 & 2 & 19 \\
-FAC\_VIV & 432746 & 295.70 & 252.31 & 12 & 132 & 226 & 2826 \\
-FAC\_MUJ & 432746 & 116.75 & 326.98 & 0 & 0 & 58 & 8836 \\
-ESTRATO & 432746 & 2.14 & 0.82 & 1 & 2 & 2 & 4 \\
-EST\_DIS & 432746 & 298.81 & 176.60 & 1 & 154 & 300 & 617 \\
-UPM\_DIS & 432746 & 9276.42 & 5065.16 & 1 & 4953 & 9192 & 17795 \\
-\hline
-\end{tabular}
-\caption{Resumen estadístico de variables numéricas del conjunto de datos ENDIREH 2021}
-\label{tab:resumen_estadistico}
+	\centering
+	\begin{tabular}{|l|c|c|c|c|c|c|c|}
+		\hline
+		Variable & Count & Mean & Std & Min & 25\% & 50\% & Max \\
+		\hline
+		ID\_VIV & 432746 & 1671565.43 & 919294.58 & 100003.01 & 903905.02 & 1661346.19 & 3260787.18 \\
+		UPM & 432746 & 1671565.37 & 919294.58 & 100003.00 & 903905.00 & 1661346.00 & 3260787.00 \\
+		VIV\_SEL & 432746 & 6.89 & 5.69 & 1.00 & 3.00 & 5.00 & 24.00 \\
+		CVE\_ENT & 432746 & 16.53 & 9.17 & 1.00 & 9.00 & 16.00 & 32.00 \\
+		CVE\_MUN & 432746 & 39.02 & 62.01 & 1.00 & 7.00 & 19.00 & 570.00 \\
+		HOGAR & 432746 & 1.03 & 0.21 & 1.00 & 1.00 & 1.00 & 6.00 \\
+		N\_REN & 432746 & 2.77 & 1.79 & 1.00 & 1.00 & 2.00 & 24.00 \\
+		PAREN & 432746 & 2.63 & 1.72 & 1.00 & 1.00 & 3.00 & 11.00 \\
+		SEXO & 432746 & 1.51 & 0.50 & 1.00 & 1.00 & 2.00 & 2.00 \\
+		EDAD & 432746 & 32.98 & 21.42 & 0.00 & 15.00 & 30.00 & 99.00 \\
+		P2\_5 & 432746 & 54.32 & 46.90 & 1.00 & 2.00 & 96.00 & 98.00 \\
+		P2\_6 & 432746 & 65.87 & 44.44 & 1.00 & 1.00 & 96.00 & 98.00 \\
+		NIV & 432746 & 3.84 & 2.89 & 0.00 & 2.00 & 3.00 & 11.00 \\
+		GRA & 416098 & 3.12 & 1.62 & 0.00 & 2.00 & 3.00 & 9.00 \\
+		P2\_9 & 416098 & 1.71 & 0.45 & 1.00 & 1.00 & 2.00 & 2.00 \\
+		P2\_10 & 416098 & 2.53 & 1.14 & 1.00 & 1.00 & 3.00 & 8.00 \\
+		P2\_11 & 416098 & 1.93 & 0.25 & 1.00 & 2.00 & 2.00 & 2.00 \\
+		P2\_13 & 351278 & 1.46 & 0.50 & 1.00 & 1.00 & 1.00 & 2.00 \\
+		P2\_16 & 351278 & 4.35 & 1.86 & 1.00 & 3.00 & 5.00 & 6.00 \\
+		FAC\_VIV & 432746 & 295.70 & 252.31 & 12.00 & 132.00 & 226.00 & 2826.00 \\
+		FAC\_MUJ & 432746 & 116.75 & 326.98 & 0.00 & 0.00 & 0.00 & 8836.00 \\
+		ESTRATO & 432746 & 2.14 & 0.82 & 1.00 & 2.00 & 2.00 & 4.00 \\
+		EST\_DIS & 432746 & 298.81 & 176.60 & 1.00 & 154.00 & 300.00 & 617.00 \\
+		UPM\_DIS & 432746 & 9276.42 & 5065.16 & 1.00 & 4953.00 & 9192.00 & 17795.00 \\
+		\hline
+	\end{tabular}
+	\caption{Resumen estad\'istico de variables num\'ericas}
+	\label{tab:resumen}
 \end{table}
+
+\subsection{Implicaciones}
+Los resultados confirman que:
+\begin{enumerate}
+	\item Los datos faltantes en variables demográficas (\texttt{EDAD}) son MCAR/MAR y manejables con métodos simples.
+	\item Las variables sensibles (\texttt{NIV}) requieren enfoques avanzados (regresión) debido a su naturaleza MNAR.
+	\item La imputación preservó las relaciones clave entre variables, permitiendo un análisis válido de factores asociados a la violencia de género en la ENDIREH 2021.
+\end{enumerate}
 
 \section{Conclusión}
 
-El análisis de datos faltantes, atípicos y la evaluación de la cardinalidad resultan fundamentales para garantizar la calidad de los datos antes de aplicar técnicas de aprendizaje automático, ya que estos factores pueden introducir sesgos que comprometen la precisión y confiabilidad de los modelos. Evaluar adecuadamente las variables permite seleccionar métodos de imputación apropiados, evitando distorsiones en los resultados finales. Para ello, es necesario conocer características generales del conjunto de datos, como el número de atributos, sus desviaciones estándar y distribuciones, lo cual facilita la toma de decisiones informadas durante el proceso de limpieza y preparación de los datos.
+El análisis de datos faltantes es fundamental. Los hallazgos ENDIREH 2021 revelan: tasas de no respuesta menor al  70\% en preguntas incomodas; outliers en EDAD. La imputación por media para EDAD y regresión para NIV mantienen una simetría y relaciones entre variables.
 
 \section{Bibliografía}
 
-Aceves Fernández, M. A. (2024). \textit{De 0 a 100 en Inteligencia Artificial}. 
+Aceves Fernández, M. A. (2024). \textit{De 0 a 100 en Inteligencia Artificial}.
 
-Aceves Fernández, M. A. (2026). Presentación 1: Datos Faltantes. Material de clase de Aprendizaje Automático, Universidad Autónoma de Querétaro.
+Aceves Fernández, M. A. (2026). Presentaciones. Material de clase, UAQ.
 
-Aceves Fernández, M. A. (2026). Presentación 2: Datos Atípicos. Material de clase de Aprendizaje Automático, Universidad Autónoma de Querétaro.
+Géron, A. (2019). \textit{Hands-On Machine Learning}. O'Reilly Media.
 
-Aceves Fernández, M. A. (2026). Presentación 3: Cardinalidad. Material de clase de Aprendizaje Automático, Universidad Autónoma de Querétaro.
-
-Géron, A. (2019). \textit{Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow} (2nd ed.). O'Reilly Media.
-
-Instituto Nacional de Estadística y Geografía (INEGI). (2021). Encuesta Nacional sobre la Dinámica de las Relaciones en los Hogares (ENDIREH) 2021. https://www.inegi.org.mx/programas/endireh/2021/
+INEGI. (2021). ENDIREH 2021. https://www.inegi.org.mx/programas/endireh/2021/
 
 \end{document}

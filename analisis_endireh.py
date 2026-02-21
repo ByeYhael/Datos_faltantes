@@ -1,99 +1,98 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
 
-ruta = r"C:\Users\yhael\Documents\Yhael\UAQ\1 semestre\Aprendizaje Automatico\Analisis de base de datos\Datos faltantes\bd_endireh_2021_csv\TSDem.csv"
+ruta_datos = r"C:\Users\yhael\Documents\Yhael\UAQ\1 semestre\Aprendizaje Automatico\Analisis de base de datos\Datos faltantes\bd_endireh_2021_csv\TSDem.csv"
+ruta_guardado = r"C:\Users\yhael\Documents\Yhael\UAQ\1 semestre\Aprendizaje Automatico\Analisis de base de datos\Datos faltantes\ActividadDatosFaltantes\Datos_faltantes"
 
-print("*****CARGANDO DATOS*****")
-df = pd.read_csv(ruta, encoding='latin-1')
-print(f"Total de registros: {len(df)}")
-print(f"Total de variables: {len(df.columns)}")
+print("CARGANDO DATOS ENDIREH 2021...")
+df = pd.read_csv(ruta_datos, encoding='latin-1')
+print(f"Registros: {len(df)}, Variables: {len(df.columns)}")
 
-print("\n" + "="*60)
-print("1. ANALISIS DE DATOS FALTANTES")
-print("="*60)
+print("\n=== CALCULO DE VALORES FALTANTES POR VARIABLE ===")
+nulos_pct = (df.isnull().sum() / len(df)) * 100
+df_nulos = pd.DataFrame({'Variable': nulos_pct.index, 'Porcentaje_Nulos': nulos_pct.values})
+df_nulos = df_nulos.sort_values('Porcentaje_Nulos', ascending=False)
+print(df_nulos[df_nulos['Porcentaje_Nulos'] > 0].to_string(index=False))
 
-datos_faltantes = df.isnull().sum()
-datos_faltantes_pct = (df.isnull().sum() / len(df)) * 100
+print("\n=== DESCARTE DE VARIABLES CON >50% NULOS ===")
+umbral = 50
+descartadas = df_nulos[df_nulos['Porcentaje_Nulos'] > umbral]['Variable'].tolist()
+print(f"Variables descartadas ({len(descartadas)}): {descartadas}")
 
-df_faltantes = pd.DataFrame({
-    'Variable': datos_faltantes.index,
-    'Valores_Faltantes': datos_faltantes.values,
-    'Porcentaje': datos_faltantes_pct.values
-})
+df_limpio = df.drop(columns=descartadas)
+print(f"Variables restantes: {len(df_limpio.columns)}")
 
-df_faltantes = df_faltantes[df_faltantes['Valores_Faltantes'] > 0].sort_values('Porcentaje', ascending=False)
-print(df_faltantes.to_string(index=False))
+df_numericas = df_limpio.select_dtypes(include=[np.number])
+cols_seleccionadas = ['EDAD', 'NIV']
 
-print(f"\nTotal de variables con datos faltantes: {len(df_faltantes)}")
-print(f"Total de valores faltantes: {df.isnull().sum().sum()}")
+print("\n=== IMPUTACION ESPECIFICA ===")
+print("EDAD: imputacion por MEDIA")
+print("NIV: imputacion por REGRESION")
 
-print("\n" + "="*60)
-print("2. DETECCION DE DATOS ATIPICOS (METODO IQR)")
-print("="*60)
+df_imputado = df_numericas.copy()
 
-def detectar_outliers_iqr(df, columna):
-    Q1 = df[columna].quantile(0.25)
-    Q3 = df[columna].quantile(0.75)
-    IQR = Q3 - Q1
-    limite_inferior = Q1 - 1.5 * IQR
-    limite_superior = Q3 + 1.5 * IQR
-    outliers = df[(df[columna] < limite_inferior) | (df[columna] > limite_superior)]
-    return len(outliers), limite_inferior, limite_superior
+if 'EDAD' in df_numericas.columns:
+    imputer = SimpleImputer(strategy='mean')
+    df_imputado['EDAD'] = imputer.fit_transform(df_numericas[['EDAD']])
+    print("  EDAD: Media aplicada")
 
-df_numericas = df.select_dtypes(include=[np.number])
+if 'NIV' in df_numericas.columns and 'EDAD' in df_numericas.columns:
+    datos_validos = df_numericas[['NIV', 'EDAD']].dropna()
+    X = datos_validos[['EDAD']].values
+    y = datos_validos['NIV'].values
+    modelo = LinearRegression()
+    modelo.fit(X, y)
+    nulos = df_numericas['NIV'].isnull()
+    if nulos.sum() > 0:
+        X_pred = df_numericas.loc[nulos, ['EDAD']].values
+        df_imputado.loc[nulos, 'NIV'] = modelo.predict(X_pred)
+    print(f"  NIV: Regresion aplicada (R2={modelo.score(X, y):.4f})")
 
-print("\nVariables numericas analizadas:", len(df_numericas.columns))
-print("\nOutliers detectados por variable:")
+print("\n=== GENERANDO BOXPLOTS INICIALES ===")
+fig, ax = plt.subplots(figsize=(12, 6))
+df_numericas[cols_seleccionadas].boxplot(ax=ax)
+plt.title('Distribucion antes de imputacion')
+plt.ylabel('Valor')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig(f'{ruta_guardado}/figures/boxplot_inicial.png', dpi=150)
+plt.close()
+print("Guardado: figures/boxplot_inicial.png")
 
-resultados_outliers = []
-for col in df_numericas.columns:
-    n_outliers, li, ls = detectar_outliers_iqr(df_numericas, col)
-    if n_outliers > 0:
-        resultados_outliers.append({
-            'Variable': col,
-            'Num_Outliers': n_outliers,
-            'Pct_Outliers': (n_outliers/len(df))*100,
-            'Lim_Inf': li,
-            'Lim_Sup': ls
-        })
+print("\n=== COMPARACION ESPECIFICA EDAD Y NIV ===")
+fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 
-df_outliers = pd.DataFrame(resultados_outliers)
-if len(df_outliers) > 0:
-    print(df_outliers.to_string(index=False))
-else:
-    print("No se detectaron outliers con el metodo IQR")
+axes[0, 0].boxplot(df_numericas['EDAD'].dropna())
+axes[0, 0].set_title('EDAD - Antes')
+axes[0, 0].set_ylabel('Valor')
 
-print("\n" + "="*60)
-print("3. ANALISIS DE CARDINALIDAD")
-print("="*60)
+axes[0, 1].boxplot(df_imputado['EDAD'])
+axes[0, 1].set_title('EDAD - Despues (Media)')
+axes[0, 1].set_ylabel('Valor')
 
-cardinalidad = df.nunique()
-df_cardinalidad = pd.DataFrame({
-    'Variable': cardinalidad.index,
-    'Valores_Unicos': cardinalidad.values
-}).sort_values('Valores_Unicos', ascending=False)
+axes[1, 0].boxplot(df_numericas['NIV'].dropna())
+axes[1, 0].set_title('NIV - Antes')
+axes[1, 0].set_ylabel('Valor')
 
-print("\nCardinalidad por variable:")
-print(df_cardinalidad.to_string(index=False))
+axes[1, 1].boxplot(df_imputado['NIV'])
+axes[1, 1].set_title('NIV - Despues (Regresion)')
+axes[1, 1].set_ylabel('Valor')
 
-print(f"\nVariables con alta cardinalidad (>50 valores unicos): {len(df_cardinalidad[df_cardinalidad['Valores_Unicos'] > 50])}")
-print(f"Variables con baja cardinalidad (<=5 valores unicos): {len(df_cardinalidad[df_cardinalidad['Valores_Unicos'] <= 5])}")
+plt.tight_layout()
+plt.savefig(f'{ruta_guardado}/figures/boxplot_edad_niv.png', dpi=150)
+plt.close()
+print("Guardado: figures/boxplot_edad_niv.png")
 
-print("\n" + "="*60)
-print("4. RESUMEN ESTADISTICO DE VARIABLES NUMERICAS")
-print("="*60)
+print("\n=== RESUMEN ESTADISTICO ===")
+estadisticos = df_imputado.describe().T
+print(estadisticos.to_string())
 
-estadisticos = df_numericas.describe().T
-
-print("\n{:<12} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}".format(
-    "Variable", "Count", "Mean", "Std", "Min", "50%", "Max"))
-print("-" * 70)
-for idx, row in estadisticos.iterrows():
-    print("{:<12} {:>10.0f} {:>10.2f} {:>10.2f} {:>10.2f} {:>10.2f} {:>10.2f}".format(
-        idx, row['count'], row['mean'], row['std'], row['min'], row['50%'], row['max']))
-
-print("\n\n=== CODIGO LATEX ===")
-print("\\begin{table}[h]")
+print("\n=== CODIGO LATEX TABLA RESUMEN ===")
+print("\\begin{table}[H]")
 print("\\centering")
 print("\\begin{tabular}{|l|c|c|c|c|c|c|c|}")
 print("\\hline")
@@ -106,3 +105,10 @@ print("\\end{tabular}")
 print("\\caption{Resumen estadistico de variables numericas}")
 print("\\label{tab:resumen}")
 print("\\end{table}")
+print("Referencia: \\ref{tab:resumen}")
+
+print("\n=== RESUMEN FINAL ===")
+print(f"Total variables analizadas: {len(df.columns)}")
+print(f"Variables descartadas (>50% nulos): {len(descartadas)}")
+print(f"EDAD: Imputacion por MEDIA")
+print(f"NIV: Imputacion por REGRESION")
