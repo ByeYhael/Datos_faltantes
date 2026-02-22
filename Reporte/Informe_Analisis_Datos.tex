@@ -8,6 +8,22 @@
 \usepackage{longtable}
 \usepackage{titling}
 \usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+
+\definecolor{burgundy}{RGB}{128, 0, 32}
+
+\pagestyle{fancy}
+\fancyhf{} % Limpiar encabezado y pie
+\renewcommand{\headrulewidth}{0pt} % Sin línea en el encabezado
+\renewcommand{\footrulewidth}{0pt} % Sin línea predeterminada en el pie
+
+\fancyfoot[C]{%
+	\color{burgundy}\rule{\textwidth}{4pt}\\ % Franja de 4pt de alto
+	\vspace{2mm} % Espacio después de la franja
+	\color{black} % Texto normal después de la franja
+	\thepage % Número de página
+}
 
 \title{
 	\textbf{Análisis de Datos Faltantes, Atípicos y Cardinalidad en Conjuntos de Datos} \\ 
@@ -60,11 +76,23 @@ El ruido puede causar: distorsión de patrones, aumento de varianza, y reducció
 \subsection{Cardinalidad}
 Número de valores únicos en una variable. Alta cardinalidad complica el modelado.
 
+\subsection{Normalización}
+La normalización es el proceso de escalar los valores de las variables a un rango específico, comúnmente $[0,1]$. Se utiliza para evitar que variables con magnitudes diferentes dominen el análisis y para mejorar el rendimiento de algoritmos de aprendizaje automático. En este análisis se aplicó la normalización Min-Max mediante la fórmula:
+\[
+X_{\text{norm}} = \frac{X - X_{\text{min}}}{X_{\text{max}} - X_{\text{min}}}
+\]
+donde $X_{\text{min}}$ y $X_{\text{max}}$ son los valores mínimo y máximo de la variable, respectivamente.
+
 \subsection{Distancias}
 \begin{itemize}
-	\item \textbf{Euclidiana}: $d(x,y) = \sqrt{\sum (x_i - y_i)^2}$
-	\item \textbf{Manhattan}: $d(x,y) = \sum |x_i - y_i|$
-	\item \textbf{Chebyshev}: $d(x,y) = \max |x_i - y_i|$
+	\item \textbf{Euclidiana}: $d(x,y) = \sqrt{\sum (x_i - y_i)^2}$ \\
+	Recomendada para espacios continuos sin outliers, ya que considera la distancia directa entre puntos.
+	
+	\item \textbf{Manhattan}: $d(x,y) = \sum |x_i - y_i|$ \\
+	Preferible en presencia de outliers o en espacios con restricciones de movimiento (ej: cuadrículas urbanas), ya que es menos sensible a valores extremos.
+	
+	\item \textbf{Chebyshev}: $d(x,y) = \max |x_i - y_i|$ \\
+	Útil cuando el costo está determinado por la dimensión más desfavorable (ej: tiempo de procesamiento en sistemas paralelos).
 \end{itemize}
 
 \section{Materiales y Métodos}
@@ -144,38 +172,34 @@ El análisis siguió el siguiente flujo:
 \begin{enumerate}
 	\item Carga del conjunto de datos con codificación \texttt{latin-1}.
 	\item Cálculo del porcentaje de valores nulos por variable mediante \texttt{df.isnull().mean() * 100}.
-	\item Descarte de 8 variables con $>50\%$ nulos y eliminación de ruido estructural (\texttt{HOGAR}, \texttt{N\_REN}).
+	\item Descarte de 7 variables con $>50\%$ nulos y eliminación de ruido estructural (\texttt{N\_REN}).
+	\item Detección de datos atípicos mediante el método del Rango Intercuartil (IQR), calculando los percentiles 25 y 75 para cada variable numérica y considerando como outliers los valores fuera de $[Q1 - 1.5 \times IQR,\ Q3 + 1.5 \times IQR]$.
 	\item Generación de boxplots iniciales para visualizar distribución y detectar outliers (Figura~\ref{fig:boxplot_inicial}).
 	\item Selección específica de método de imputación por variable:
 	\begin{itemize}
-		\item \textbf{EDAD}: Imputación por \textit{media} (distribución simétrica, sesgo < 0.1).
-		\item \textbf{NIV}: Imputación por \textit{regresión} (R² = 0.0087, aprovechando correlación con \texttt{GRA}).
-		\item \textbf{Resto de variables} (\texttt{GRA}, \texttt{P2\_9}, \texttt{P2\_10}, \texttt{P2\_11}, \texttt{P2\_13}, \texttt{P2\_16}): Imputación por \textit{mediana} (distribuciones sesgadas o con outliers).
+		\item \textbf{EDAD}: Imputación por \textit{media} (distribución simétrica, sesgo $<$ 0.1).
+		\item \textbf{NIV}: Imputación por \textit{moda}.
+		\item \textbf{Resto de variables}: Imputación por \textit{mediana}.
 	\end{itemize}
-	\item Aplicación de imputación mediante \texttt{SimpleImputer} (media/mediana) y regresión lineal para \texttt{NIV}.
-	\item Normalización con \texttt{MinMaxScaler} para escalar variables a $[0,1]$.
+	\item Aplicación de imputación mediante \texttt{SimpleImputer} (media/mediana/moda).
+	\item Normalización con \texttt{MinMaxScaler} para escalar las variables imputadas al rango $[0,1]$, utilizando la implementación de \texttt{scikit-learn}.
 	\item Generación de boxplots (Figura~\ref{fig:boxplot_inicial}) incluyendo comparación específica EDAD-NIV (Figura~\ref{fig:boxplot_edad_niv}).
 \end{enumerate}
 
-Todas las operaciones se realizaron en Python 3.13 usando las librerías \texttt{pandas}, \texttt{numpy}, \texttt{matplotlib}, \texttt{seaborn} y \texttt{scikit-learn}. El código completo se encuentra en \texttt{src/analisis.py}.
+Todas las operaciones se realizaron en Python 3.13 usando las librerías \texttt{pandas}, \texttt{numpy}, \texttt{matplotlib}, \texttt{seaborn} y \texttt{scikit-learn}. El código completo se encuentra en \texttt{src/analisis\_endireh.py}.
 
 
 
 \section{Resultados y Discusión}
 
 \subsection{Resultados de imputación}
-La Figura~\ref{fig:boxplot_inicial} muestra la distribución inicial de las variables antes de la imputación, revelando una alta concentración de valores faltantes en variables como \texttt{P2\_12} (93.63\%). La imputación por media preservó la simetría de \texttt{EDAD} (media = 32.98, desviación estándar = 21.42), mientras que la regresión aplicada a \texttt{NIV} (R² = 0.0087) redujo ligeramente el sesgo entre media (3.86) y mediana (3), como se observa en la Figura~\ref{fig:boxplot_edad_niv}.
+La Figura~\ref{fig:boxplot_inicial} muestra la distribución inicial de las variables antes de la imputación. La imputación por media preservó la simetría de \texttt{EDAD}. La imputación por moda aplicada a \texttt{NIV} permitió manejar los valores faltantes de forma eficiente.
 
 \subsection{Análisis de datos faltantes}
 El análisis identificó 8 variables con más del 50\% de valores nulos (Tabla~\ref{tab:variables-descartadas}), siendo \texttt{P2\_12} la más afectada (93.63\%). Estas variables corresponden principalmente a preguntas aplicables solo a submuestras específicas (ej: mujeres de 15+ años), lo que explica su alta tasa de no respuesta. La distribución inicial de las variables analizadas mostró sesgo positivo en \texttt{NIV} (nivel educativo) y simetría en \texttt{EDAD}.
 
 \subsection{Efecto de la imputación}
-Se aplicaron métodos específicos según la naturaleza de cada variable:
-\begin{itemize}
-	\item \texttt{EDAD}: Imputación por media (distribución simétrica, sesgo < 0.1).
-	\item \texttt{NIV}: Imputación por regresión lineal (R² = 0.0087), aprovechando su correlación con \texttt{GRA}.
-	\item Resto de variables: Imputación por mediana (distribuciones sesgadas).
-\end{itemize}
+Se aplicaron métodos específicos según la naturaleza de cada variable. Para \texttt{EDAD}, se utilizó imputación por media debido a su distribución simétrica (sesgo menor a 0.1). En el caso de \texttt{NIV}, se aplicó imputación por moda, ya que esta variable es ordinal y no presenta correlación significativa con otras variables, por lo que el valor más frecuente resultó el método más apropiado. Para el resto de las variables, se empleó imputación por mediana debido a sus distribuciones sesgadas.
 
 \begin{figure}[H]
 	\centering
@@ -187,7 +211,7 @@ Se aplicaron métodos específicos según la naturaleza de cada variable:
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{../figures/boxplot_edad_niv.png}
-	\caption{Comparación EDAD (media) y NIV (regresión)}
+	\caption{Comparación EDAD (media) y NIV (moda)}
 	\label{fig:boxplot_edad_niv}
 \end{figure}
 
@@ -232,16 +256,11 @@ La Tabla~\ref{tab:resumen} presenta el resumen estadistico post-imputacion.
 \end{table}
 
 \subsection{Implicaciones}
-Los resultados confirman que:
-\begin{enumerate}
-	\item Los datos faltantes en variables demográficas (\texttt{EDAD}) son MCAR/MAR y manejables con métodos simples.
-	\item Las variables sensibles (\texttt{NIV}) requieren enfoques avanzados (regresión) debido a su naturaleza MNAR.
-	\item La imputación preservó las relaciones clave entre variables, permitiendo un análisis válido de factores asociados a la violencia de género en la ENDIREH 2021.
-\end{enumerate}
+Los resultados confirman que los datos faltantes en variables demográficas como \texttt{EDAD} siguen patrones MCAR/MAR y son manejables con métodos simples como la imputación por media. Por otro lado, las variables sensibles como \texttt{NIV} requieren enfoques por moda debido a su naturaleza MNAR, ya que no presentan correlación significativa con otras variables y su naturaleza ordinal exige preservar valores categóricos válidos. La imputación aplicada preservó las relaciones clave entre variables, permitiendo un análisis válido de factores asociados a la violencia de género en la ENDIREH 2021.
 
 \section{Conclusión}
 
-El análisis de datos faltantes es fundamental. Los hallazgos ENDIREH 2021 revelan: tasas de no respuesta menor al  70\% en preguntas incomodas; outliers en EDAD. La imputación por media para EDAD y regresión para NIV mantienen una simetría y relaciones entre variables.
+El análisis de datos faltantes es fundamental. Los hallazgos ENDIREH 2021 revelan: tasas de no respuesta menor al  70\% en preguntas incomodas; outliers en EDAD. La imputación por media para EDAD y moda para NIV mantienen una simetría y relaciones entre variables.
 
 \section{Bibliografía}
 
